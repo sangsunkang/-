@@ -273,7 +273,7 @@
                 return { powerValue: used, loadRate: capacity > 0 ? (used / capacity) * 100 : 0 };
             }, [pPhase, pV, pI, pIR, pIS, pIT, pBreaker]);
 
-            // 부하 전류 산출 값 및 KEC 케이블 규격 매칭 로직
+            // 부하 전류 산출 값 계산
             const calculatedCurrent = useMemo(() => {
                 const p = parseFloat(iP) || 0;
                 const v = parseFloat(iV) || 1;
@@ -281,6 +281,7 @@
                 return p / (Math.sqrt(3) * v);
             }, [iP, iV, iPhase]);
 
+            // KEC 케이블 규격 자동 매칭 로직
             const recommendedCable = useMemo(() => {
                 return KEC_CABLES.find(c => c.current >= calculatedCurrent) || KEC_CABLES[KEC_CABLES.length - 1];
             }, [calculatedCurrent]);
