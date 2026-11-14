@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전기 부하 분석 도구 v3.14</title>
+    <title>전기 부하 분석 도구 v3.16</title>
     <!-- 외부 라이브러리 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -79,25 +79,45 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // KEC 저압 케이블 허용전류 기준 테이블 (동선 기준 표준 참고값)
-        const KEC_CABLES = [
-            { size: 1.5, current: 15 },
-            { size: 2.5, current: 24 },
-            { size: 4, current: 32 },
-            { size: 6, current: 41 },
-            { size: 10, current: 57 },
-            { size: 16, current: 76 },
-            { size: 25, current: 96 },
-            { size: 35, current: 119 },
-            { size: 50, current: 144 },
-            { size: 70, current: 184 },
-            { size: 95, current: 223 },
-            { size: 120, current: 259 },
-            { size: 150, current: 299 },
-            { size: 185, current: 341 },
-            { size: 240, current: 403 },
-            { size: 300, current: 464 }
-        ];
+        // KEC 저압 케이블 허용전류 기준 테이블 (종류별 표준 참고값)
+        const CABLE_TABLES = {
+            CV: [
+                { size: 1.5, current: 17.5 },
+                { size: 2.5, current: 24 },
+                { size: 4, current: 32 },
+                { size: 6, current: 41 },
+                { size: 10, current: 57 },
+                { size: 16, current: 76 },
+                { size: 25, current: 96 },
+                { size: 35, current: 119 },
+                { size: 50, current: 144 },
+                { size: 70, current: 184 },
+                { size: 95, current: 223 },
+                { size: 120, current: 259 },
+                { size: 150, current: 299 },
+                { size: 185, current: 341 },
+                { size: 240, current: 403 },
+                { size: 300, current: 464 }
+            ],
+            HIV: [
+                { size: 1.5, current: 15 },
+                { size: 2.5, current: 21 },
+                { size: 4, current: 28 },
+                { size: 6, current: 36 },
+                { size: 10, current: 50 },
+                { size: 16, current: 68 },
+                { size: 25, current: 89 },
+                { size: 35, current: 110 },
+                { size: 50, current: 134 },
+                { size: 70, current: 171 },
+                { size: 95, current: 207 },
+                { size: 120, current: 239 },
+                { size: 150, current: 275 },
+                { size: 185, current: 315 },
+                { size: 240, current: 370 },
+                { size: 300, current: 425 }
+            ]
+        };
 
         // --- UI 컴포넌트 ---
 
@@ -252,6 +272,7 @@
             const [iPhase, setIPhase] = useState(3);
             const [iP, setIP] = useState(15000);
             const [iV, setIV] = useState(380);
+            const [cableType, setCableType] = useState('CV'); // 케이블 종류 상태 추가
 
             const [ubR, setUbR] = useState(100);
             const [ubS, setUbS] = useState(120);
@@ -281,10 +302,11 @@
                 return p / (Math.sqrt(3) * v);
             }, [iP, iV, iPhase]);
 
-            // KEC 케이블 규격 자동 매칭 로직
+            // 선택된 케이블 종류(CV / HIV)에 따른 KEC 규격 매칭 로직
             const recommendedCable = useMemo(() => {
-                return KEC_CABLES.find(c => c.current >= calculatedCurrent) || KEC_CABLES[KEC_CABLES.length - 1];
-            }, [calculatedCurrent]);
+                const table = CABLE_TABLES[cableType] || CABLE_TABLES.CV;
+                return table.find(c => c.current >= calculatedCurrent) || table[table.length - 1];
+            }, [calculatedCurrent, cableType]);
 
             return (
                 <div className="max-w-[1500px] mx-auto px-6 md:px-8 py-4 min-h-screen">
@@ -303,7 +325,7 @@
                                 </h1>
                                 <div className="flex items-center gap-2">
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-mono opacity-80 text-white">V3.14</span>
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-mono opacity-80 text-white">V3.16</span>
                                 </div>
                             </div>
                         </div>
@@ -338,7 +360,7 @@
                             <div className="grid grid-cols-3 gap-2"><InputGroup label="R상" value={pIR} onChange={setPIR} unit="A" /><InputGroup label="S상" value={pIS} onChange={setPIS} unit="A" /><InputGroup label="T상" value={pIT} onChange={setPIT} unit="A" /></div>}
                         </Card>
 
-                        {/* 2. 부하 전류 산출 (KEC 케이블 규격 추천 추가) */}
+                        {/* 2. 부하 전류 산출 (케이블 종류 및 KEC 규격 추천 포함) */}
                         <Card 
                             title="부하 전류 산출" 
                             iconName="calculator" 
@@ -351,7 +373,7 @@
                             subResult={
                                 <div className="bg-slate-900/80 p-3 rounded-xl border border-indigo-500/20 flex items-center justify-between shadow-inner">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[9px] font-black text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30 uppercase tracking-tighter">KEC 규격</span>
+                                        <span className="text-[9px] font-black text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30 uppercase tracking-tighter">{cableType} 규격</span>
                                         <span className="text-[11px] font-bold text-slate-300">권장 최소 케이블</span>
                                     </div>
                                     <div className="flex items-baseline gap-1">
@@ -361,8 +383,20 @@
                                 </div>
                             }
                         >
-                            <ToggleSelector value={iPhase} onChange={setIPhase} options={[{label:'단상 (1Φ)', val:1}, {label:'삼상 (3Φ)', val:3}]} />
-                            <div className="grid grid-cols-2 gap-3"><InputGroup label="부하 전력" value={iP} onChange={setIP} unit="W" /><InputGroup label="사용 전압" value={iV} onChange={setIV} unit="V" /></div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 mb-1.5 ml-1 uppercase tracking-widest">케이블 종류 선택</label>
+                                    <ToggleSelector value={cableType} onChange={setCableType} options={[{label:'CV 케이블 (XLPE)', val:'CV'}, {label:'HIV 전선 (PVC)', val:'HIV'}]} />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 mb-1.5 ml-1 uppercase tracking-widest">전원 방식</label>
+                                    <ToggleSelector value={iPhase} onChange={setIPhase} options={[{label:'단상 (1Φ)', val:1}, {label:'삼상 (3Φ)', val:3}]} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <InputGroup label="부하 전력" value={iP} onChange={setIP} unit="W" />
+                                    <InputGroup label="사용 전압" value={iV} onChange={setIV} unit="V" />
+                                </div>
+                            </div>
                         </Card>
 
                         {/* 3. 부하 불평형률 진단 */}
