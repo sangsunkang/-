@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전기 설비 관리 Pro 대시보드 v3.14</title>
+    <title>전기 설비 관리 Pro 대시보드 v3.15</title>
     <!-- 외부 라이브러리 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -343,7 +344,7 @@
                                 </h1>
                                 <div className="flex items-center gap-2">
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-mono opacity-80 text-white">V3.14</span>
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest font-mono opacity-80 text-white">V3.15</span>
                                 </div>
                             </div>
                         </div>
@@ -371,14 +372,14 @@
                         >
                             <ToggleSelector value={pPhase} onChange={setPPhase} options={[{label:'단상 (1Φ)', val:1}, {label:'3상 4선 (3Φ)', val:3}]} />
                             <div className="grid grid-cols-2 gap-3">
-                                <InputGroup label="차단기 정격" value={pBreaker} onChange={setBreaker} unit="A" />
+                                <InputGroup label="차단기 정격" value={pBreaker} onChange={setPBreaker} unit="A" />
                                 <InputGroup label={pPhase === 1 ? "사용 전압" : "상전압 (220V)"} value={pV} onChange={setPV} unit="V" />
                             </div>
                             {pPhase === 1 ? <InputGroup label="부하 전류" value={pI} onChange={setPI} unit="A" /> :
                             <div className="grid grid-cols-3 gap-2"><InputGroup label="R상 전류" value={pIR} onChange={setPIR} unit="A" /><InputGroup label="S상 전류" value={pIS} onChange={setPIS} unit="A" /><InputGroup label="T상 전류" value={pIT} onChange={setPIT} unit="A" /></div>}
                         </Card>
 
-                        {/* 2. 부하 전류 산출 (KEC 케이블 규격 추천 추가) */}
+                        {/* 2. 부하 전류 산출 (KEC 케이블 규격 추천 포함) */}
                         <Card 
                             title="부하 전류 산출" 
                             iconName="calculator" 
